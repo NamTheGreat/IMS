@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+CAUTION: Do not modify this file unless you know what you are doing.
+ Unexpected results may occur if the code is changed deliberately.
+-->
+<dbmodel pgmodeler-ver="1.2.2" use-changelog="false" max-obj-count="6"
+	 gen-disabled-objs-code="false" show-sys-schemas-rects="true"
+	 last-position="0,0" last-zoom="0.65"
+	 default-schema="public" default-owner="postgres"
+	 layers="Default layer"
+	 active-layers="0"
+	 layer-name-colors="#000000"
+	 layer-rect-colors="#b4b4b4"
+	 show-layer-names="false" show-layer-rects="false">
+<role name="ims_admin"
+ inherit="true"
+ login="true">
+</role>
+
+<database name="new_database" is-template="false" allow-conns="true">
+</database>
+
+<schema name="public" layers="0" fill-color="#e1e1e1" name-color="#000000" sql-disabled="true">
+</schema>
+
+<schema name="ims" layers="0" rect-visible="true" fill-color="#e1e1e1" name-color="#31363b">
+	<role name="ims_admin"/>
+</schema>
+
+<schema name="rbac" layers="0" rect-visible="true" fill-color="#e1e1e1" name-color="#31363b">
+	<role name="ims_admin"/>
+</schema>
+
+<table name="product" layers="0" collapse-mode="2" max-obj-count="6" z-value="0">
+	<schema name="ims"/>
+	<role name="ims_admin"/>
+	<position x="762.571" y="276.571"/>
+	<column name="product_id" not-null="true">
+		<type name="uuid" length="0"/>
+		<comment> <![CDATA[Unique product identifier]]> </comment>
+	</column>
+	<column name="name" not-null="true">
+		<type name="varchar" length="255"/>
+		<comment> <![CDATA[Name of the product]]> </comment>
+	</column>
+	<column name="description">
+		<type name="text" length="0"/>
+		<comment> <![CDATA[OPTIONAL description of the product]]> </comment>
+	</column>
+	<column name="category">
+		<type name="varchar" length="255"/>
+		<comment> <![CDATA[Category or type of product]]> </comment>
+	</column>
+	<column name="unit_price" not-null="true">
+		<type name="decimal" length="10" precision="2"/>
+		<comment> <![CDATA[Cost or standard price per unit]]> </comment>
+	</column>
+	<constraint name="product_pk" type="pk-constr" table="ims.product">
+		<columns names="product_id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="supplier" layers="0" collapse-mode="2" max-obj-count="3" z-value="0">
+	<schema name="ims"/>
+	<role name="ims_admin"/>
+	<position x="1135.57" y="293.571"/>
+	<column name="supplier_id" not-null="true">
+		<type name="uuid" length="0"/>
+		<comment> <![CDATA[Unique identifier of the supplier]]> </comment>
+	</column>
+	<column name="name" not-null="true">
+		<type name="varchar" length="255"/>
+		<comment> <![CDATA[Name of the supplier]]> </comment>
+	</column>
+	<column name="contact_info" not-null="true">
+		<type name="varchar" length="255"/>
+		<comment> <![CDATA[Phone/email address of the supplier]]> </comment>
+	</column>
+	<constraint name="supplier_pk" type="pk-constr" table="ims.supplier">
+		<columns names="supplier_id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="inventory" layers="0" collapse-mode="2" max-obj-count="6" z-value="0">
+	<schema name="ims"/>
+	<role name="ims_admin"/>
+	<position x="1003.57" y="553.571"/>
+	<column name="inventory_id" not-null="true">
+		<type name="uuid" length="0"/>
+		<comment> <![CDATA[Unique inventory record]]> </comment>
+	</column>
+	<column name="product_id" not-null="true">
+		<type name="uuid" length="0"/>
+		<comment> <![CDATA[Unique identifier of the product]]> </comment>
+	</column>
+	<column name="supplier_id" not-null="true">
+		<type name="uuid" length="0"/>
+		<comment> <![CDATA[Unique identifier of the supplier]]> </comment>
+	</column>
+	<column name="quantity_on_hand" not-null="true">
+		<type name="integer" length="0"/>
+		<comment> <![CDATA[Current stock]]> </comment>
+	</column>
+	<column name="reorder_level" not-null="true">
+		<type name="integer" length="0"/>
+		<comment> <![CDATA[Threshold for restocking]]> </comment>
+	</column>
+	<constraint name="inventory_pk" type="pk-constr" table="ims.inventory">
+		<columns names="inventory_id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="orders" layers="0" collapse-mode="2" max-obj-count="4" z-value="0">
+	<schema name="ims"/>
+	<role name="ims_admin"/>
+	<position x="1097.14" y="860"/>
+	<column name="order_id" not-null="true">
+		<type name="uuid" length="0"/>
+		<comment> <![CDATA[Unique order identifier]]> </comment>
+	</column>
+	<column name="inventory_id" not-null="true">
+		<type name="uuid" length="0"/>
+		<comment> <![CDATA[Unique identifier of the inventory item ordered]]> </comment>
+	</column>
+	<column name="order_date" not-null="true">
+		<type name="date" length="0"/>
+		<comment> <![CDATA[When was the order placed]]> </comment>
+	</column>
+	<column name="customer_id" not-null="true">
+		<type name="uuid" length="0"/>
+		<comment> <![CDATA[Unique identifier of the customer]]> </comment>
+	</column>
+	<constraint name="order_pk" type="pk-constr" table="ims.orders">
+		<columns names="order_id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="customer" layers="0" collapse-mode="2" max-obj-count="3" z-value="0">
+	<schema name="ims"/>
+	<role name="ims_admin"/>
+	<position x="625.714" y="684.286"/>
+	<column name="customer_id" not-null="true">
+		<type name="uuid" length="0"/>
+		<comment> <![CDATA[Unique identifier of the customer]]> </comment>
+	</column>
+	<column name="customer_name" not-null="true">
+		<type name="varchar" length="255"/>
+		<comment> <![CDATA[Name of the customer]]> </comment>
+	</column>
+	<column name="contact_info" not-null="true">
+		<type name="varchar" length="255"/>
+		<comment> <![CDATA[Customer contact details]]> </comment>
+	</column>
+	<constraint name="customer_pk" type="pk-constr" table="ims.customer">
+		<columns names="customer_id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<constraint name="product_id_fk" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="RESTRICT" ref-table="ims.product" table="ims.inventory">
+	<columns names="product_id" ref-type="src-columns"/>
+	<columns names="product_id" ref-type="dst-columns"/>
+		<comment> <![CDATA[Product ID is a Foreign Key to products table]]> </comment>
+</constraint>
+
+<constraint name="supplier_id_fk" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="RESTRICT" ref-table="ims.supplier" table="ims.inventory">
+	<columns names="supplier_id" ref-type="src-columns"/>
+	<columns names="supplier_id" ref-type="dst-columns"/>
+		<comment> <![CDATA[Supplier ID is a Foreign Key to suppliers table]]> </comment>
+</constraint>
+
+<constraint name="inventory_id_fk" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="RESTRICT" ref-table="ims.inventory" table="ims.orders">
+	<columns names="inventory_id" ref-type="src-columns"/>
+	<columns names="inventory_id" ref-type="dst-columns"/>
+		<comment> <![CDATA[inventory_id is a Foreign Key to inventory table]]> </comment>
+</constraint>
+
+<constraint name="customer_id_fk" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="RESTRICT" ref-table="ims.customer" table="ims.orders">
+	<columns names="customer_id" ref-type="src-columns"/>
+	<columns names="customer_id" ref-type="dst-columns"/>
+		<comment> <![CDATA[customer_id is a Foreign Key to customer table]]> </comment>
+</constraint>
+
+<relationship name="rel_inventory_product" type="relfk" layers="0"
+	 src-table="ims.inventory"
+	 dst-table="ims.product" reference-fk="product_id_fk"
+	 src-required="false" dst-required="true">
+	<label ref-type="name-label">
+		<position x="-29.122" y="-15.653"/>
+	</label>
+</relationship>
+
+<relationship name="rel_inventory_supplier" type="relfk" layers="0"
+	 src-table="ims.inventory"
+	 dst-table="ims.supplier" reference-fk="supplier_id_fk"
+	 src-required="false" dst-required="true"/>
+
+<relationship name="rel_order_inventory" type="relfk" layers="0"
+	 src-table="ims.orders"
+	 dst-table="ims.inventory" reference-fk="inventory_id_fk"
+	 src-required="false" dst-required="true"/>
+
+<relationship name="rel_order_customer" type="relfk" layers="0"
+	 src-table="ims.orders"
+	 dst-table="ims.customer" reference-fk="customer_id_fk"
+	 src-required="false" dst-required="true"/>
+
+</dbmodel>
