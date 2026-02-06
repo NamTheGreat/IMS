@@ -218,13 +218,39 @@ function Dashboard() {
 // Simple Inventory
 function Inventory() {
     const [items, setItems] = React.useState([]);
+    const [showForm, setShowForm] = React.useState(false);
+    const [newItem, setNewItem] = React.useState({ name: '', category: '', quantity: '', price: '' });
 
-    React.useEffect(() => {
+    const fetchItems = () => {
         fetch('http://localhost:3000/api/inventory')
             .then(res => res.json())
             .then(data => setItems(data))
             .catch(err => console.error('Error:', err));
+    };
+
+    React.useEffect(() => {
+        fetchItems();
     }, []);
+
+    const handleAdd = (e) => {
+        e.preventDefault();
+        fetch('http://localhost:3000/api/inventory', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newItem)
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    setShowForm(false);
+                    setNewItem({ name: '', category: '', quantity: '', price: '' });
+                    fetchItems();
+                } else {
+                    alert('Error adding item: ' + data.error);
+                }
+            })
+            .catch(err => alert('Error: ' + err.message));
+    };
 
     return (
         <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'system-ui, sans-serif' }}>
@@ -237,7 +263,55 @@ function Inventory() {
                 </nav>
             </aside>
             <main style={{ flex: 1, backgroundColor: '#f1f5f9', padding: '30px' }}>
-                <h1 style={{ marginBottom: '30px', color: '#1e293b' }}>Inventory</h1>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+                    <h1 style={{ color: '#1e293b', margin: 0 }}>Inventory</h1>
+                    <button
+                        onClick={() => setShowForm(!showForm)}
+                        style={{ padding: '10px 20px', backgroundColor: '#2563eb', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
+                    >
+                        {showForm ? 'Cancel' : '+ Add Item'}
+                    </button>
+                </div>
+
+                {showForm && (
+                    <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '12px', marginBottom: '30px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                        <h3 style={{ marginBottom: '15px' }}>New Inventory Item</h3>
+                        <form onSubmit={handleAdd} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr auto', gap: '10px' }}>
+                            <input
+                                placeholder="Product Name"
+                                value={newItem.name}
+                                onChange={e => setNewItem({ ...newItem, name: e.target.value })}
+                                required
+                                style={{ padding: '10px', border: '1px solid #e2e8f0', borderRadius: '6px' }}
+                            />
+                            <input
+                                placeholder="Category"
+                                value={newItem.category}
+                                onChange={e => setNewItem({ ...newItem, category: e.target.value })}
+                                required
+                                style={{ padding: '10px', border: '1px solid #e2e8f0', borderRadius: '6px' }}
+                            />
+                            <input
+                                type="number"
+                                placeholder="Quantity"
+                                value={newItem.quantity}
+                                onChange={e => setNewItem({ ...newItem, quantity: e.target.value })}
+                                required
+                                style={{ padding: '10px', border: '1px solid #e2e8f0', borderRadius: '6px' }}
+                            />
+                            <input
+                                type="number"
+                                placeholder="Price"
+                                value={newItem.price}
+                                onChange={e => setNewItem({ ...newItem, price: e.target.value })}
+                                required
+                                style={{ padding: '10px', border: '1px solid #e2e8f0', borderRadius: '6px' }}
+                            />
+                            <button type="submit" style={{ padding: '10px 20px', backgroundColor: '#22c55e', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Save</button>
+                        </form>
+                    </div>
+                )}
+
                 <div style={{ backgroundColor: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead style={{ backgroundColor: '#f8fafc' }}>
@@ -268,13 +342,39 @@ function Inventory() {
 // Simple Suppliers
 function Suppliers() {
     const [suppliers, setSuppliers] = React.useState([]);
+    const [showForm, setShowForm] = React.useState(false);
+    const [newSupplier, setNewSupplier] = React.useState({ name: '', contact: '' });
 
-    React.useEffect(() => {
+    const fetchSuppliers = () => {
         fetch('http://localhost:3000/api/suppliers')
             .then(res => res.json())
             .then(data => setSuppliers(data))
             .catch(err => console.error('Error:', err));
+    };
+
+    React.useEffect(() => {
+        fetchSuppliers();
     }, []);
+
+    const handleAdd = (e) => {
+        e.preventDefault();
+        fetch('http://localhost:3000/api/suppliers', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newSupplier)
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    setShowForm(false);
+                    setNewSupplier({ name: '', contact: '' });
+                    fetchSuppliers();
+                } else {
+                    alert('Error adding supplier: ' + data.error);
+                }
+            })
+            .catch(err => alert('Error: ' + err.message));
+    };
 
     return (
         <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'system-ui, sans-serif' }}>
@@ -287,7 +387,39 @@ function Suppliers() {
                 </nav>
             </aside>
             <main style={{ flex: 1, backgroundColor: '#f1f5f9', padding: '30px' }}>
-                <h1 style={{ marginBottom: '30px', color: '#1e293b' }}>Suppliers</h1>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+                    <h1 style={{ color: '#1e293b', margin: 0 }}>Suppliers</h1>
+                    <button
+                        onClick={() => setShowForm(!showForm)}
+                        style={{ padding: '10px 20px', backgroundColor: '#2563eb', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
+                    >
+                        {showForm ? 'Cancel' : '+ Add Supplier'}
+                    </button>
+                </div>
+
+                {showForm && (
+                    <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '12px', marginBottom: '30px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                        <h3 style={{ marginBottom: '15px' }}>New Supplier</h3>
+                        <form onSubmit={handleAdd} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '10px' }}>
+                            <input
+                                placeholder="Supplier Name"
+                                value={newSupplier.name}
+                                onChange={e => setNewSupplier({ ...newSupplier, name: e.target.value })}
+                                required
+                                style={{ padding: '10px', border: '1px solid #e2e8f0', borderRadius: '6px' }}
+                            />
+                            <input
+                                placeholder="Contact Info"
+                                value={newSupplier.contact}
+                                onChange={e => setNewSupplier({ ...newSupplier, contact: e.target.value })}
+                                required
+                                style={{ padding: '10px', border: '1px solid #e2e8f0', borderRadius: '6px' }}
+                            />
+                            <button type="submit" style={{ padding: '10px 20px', backgroundColor: '#22c55e', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Save</button>
+                        </form>
+                    </div>
+                )}
+
                 <div style={{ backgroundColor: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead style={{ backgroundColor: '#f8fafc' }}>

@@ -74,6 +74,52 @@ app.get('/api/suppliers', (req, res) => {
     });
 });
 
+// Add Inventory
+app.post('/api/inventory', (req, res) => {
+    const { name, category, quantity, price, supplier_id } = req.body;
+
+    // 1. Create Product
+    const productId = `prod-${Date.now()}`;
+    db.run(
+        `INSERT INTO product (product_id, name, category, unit_price) VALUES (?, ?, ?, ?)`,
+        [productId, name, category, price],
+        (err) => {
+            if (err) return res.status(500).json({ error: err.message });
+
+            // 2. Create Inventory Record
+            const inventoryId = `inv-${Date.now()}`;
+            // Use a default supplier or one passed in. For now, we'll pick the first supplier if not provided or just use a dummy one if empty.
+            // A better way is to let user select supplier. Let's assume user passes supplier_id or we pick one.
+            // Fix: We need a valid supplier_id. Let's force user to pick one or default to the first one found.
+
+            const finalSupplierId = supplier_id || 'sup-1'; // Default Fallback
+
+            db.run(
+                `INSERT INTO inventory (inventory_id, product_id, supplier_id, quantity_on_hand, reorder_level) VALUES (?, ?, ?, ?, ?)`,
+                [inventoryId, productId, finalSupplierId, quantity, 10], // Default reorder level 10
+                (err) => {
+                    if (err) return res.status(500).json({ error: err.message });
+                    res.json({ success: true, message: 'Inventory added' });
+                }
+            );
+        }
+    );
+});
+
+// Add Supplier
+app.post('/api/suppliers', (req, res) => {
+    const { name, contact } = req.body;
+    const supplierId = `sup-${Date.now()}`;
+    db.run(
+        `INSERT INTO supplier (supplier_id, name, contact_info) VALUES (?, ?, ?)`,
+        [supplierId, name, contact],
+        (err) => {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json({ success: true, message: 'Supplier added' });
+        }
+    );
+});
+
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
