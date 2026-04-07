@@ -6,7 +6,7 @@ const Inventory = () => {
     const [items, setItems] = useState([]);
 
     useEffect(() => {
-        axios.get('http://localhost:3000/api/inventory')
+        axios.get('http://localhost:4000/api/inventory')
             .then(res => setItems(res.data))
             .catch(err => console.error(err));
     }, []);

@@ -38,7 +38,7 @@ function Login() {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const response = await fetch('http://localhost:3000/api/login', {
+            const response = await fetch('http://localhost:4000/api/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
@@ -169,7 +169,7 @@ function Dashboard() {
     const [stats, setStats] = React.useState({ totalProducts: 0, lowStock: 0, suppliers: 0, stockValue: 0 });
 
     React.useEffect(() => {
-        fetch('http://localhost:3000/api/dashboard')
+        fetch('http://localhost:4000/api/dashboard')
             .then(res => res.json())
             .then(data => setStats(data))
             .catch(err => console.error('Error:', err));
@@ -222,7 +222,7 @@ function Inventory() {
     const [newItem, setNewItem] = React.useState({ name: '', category: '', quantity: '', price: '' });
 
     const fetchItems = () => {
-        fetch('http://localhost:3000/api/inventory')
+        fetch('http://localhost:4000/api/inventory')
             .then(res => res.json())
             .then(data => setItems(data))
             .catch(err => console.error('Error:', err));
@@ -234,7 +234,7 @@ function Inventory() {
 
     const handleAdd = (e) => {
         e.preventDefault();
-        fetch('http://localhost:3000/api/inventory', {
+        fetch('http://localhost:4000/api/inventory', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(newItem)
@@ -346,7 +346,7 @@ function Suppliers() {
     const [newSupplier, setNewSupplier] = React.useState({ name: '', contact: '' });
 
     const fetchSuppliers = () => {
-        fetch('http://localhost:3000/api/suppliers')
+        fetch('http://localhost:4000/api/suppliers')
             .then(res => res.json())
             .then(data => setSuppliers(data))
             .catch(err => console.error('Error:', err));
@@ -358,7 +358,7 @@ function Suppliers() {
 
     const handleAdd = (e) => {
         e.preventDefault();
-        fetch('http://localhost:3000/api/suppliers', {
+        fetch('http://localhost:4000/api/suppliers', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(newSupplier)

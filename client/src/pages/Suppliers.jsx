@@ -6,7 +6,7 @@ const Suppliers = () => {
     const [suppliers, setSuppliers] = useState([]);
 
     useEffect(() => {
-        axios.get('http://localhost:3000/api/suppliers')
+        axios.get('http://localhost:4000/api/suppliers')
             .then(res => setSuppliers(res.data))
             .catch(err => console.error(err));
     }, []);
