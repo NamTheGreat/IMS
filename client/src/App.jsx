@@ -222,11 +222,14 @@ function AppLayout({ children }) {
 
 // ─── Dashboard ───────────────────────────────────────────────────
 function Dashboard() {
-    const [stats, setStats] = React.useState({ totalProducts: 0, lowStock: 0, suppliers: 0, stockValue: 0 });
+    const [stats, setStats] = React.useState({ totalProducts: 0, lowStock: 0, suppliers: 0, stockValue: 0, categories: [], recentItems: [] });
 
     React.useEffect(() => {
         fetch(`${API}/dashboard`).then(r => r.json()).then(setStats).catch(console.error);
     }, []);
+
+    const barColors = ['bg-primary', 'bg-tertiary', 'bg-primary-container', 'bg-secondary', 'bg-tertiary-container'];
+    const healthPct = stats.totalProducts > 0 ? Math.round(((stats.totalProducts - stats.lowStock) / stats.totalProducts) * 100) : 0;
 
     return (
         <>
@@ -247,41 +250,43 @@ function Dashboard() {
                 {/* Metrics */}
                 <div className="col-span-12 md:col-span-4 grid gap-6">
                     <GlassMetric icon="inventory" iconColor="text-primary" label="Total Items"
-                        value={stats.totalProducts} sub={<><span className="material-symbols-outlined text-sm">trending_up</span> +2.4% vs last cycle</>}
+                        value={stats.totalProducts}
+                        sub={<><span className="material-symbols-outlined text-sm">groups</span> {stats.suppliers} supplier{stats.suppliers !== 1 ? 's' : ''} connected</>}
                         subColor="text-tertiary" hoverRing="hover:ring-tertiary/30" />
                     <GlassMetric icon="warning" iconColor="text-error" label="Low Stock Alerts"
-                        value={stats.lowStock} sub="Critical threshold exceeded"
+                        value={stats.lowStock} sub={stats.lowStock > 0 ? "Items below reorder level" : "All stock levels healthy"}
                         subColor="text-on-surface-variant" hoverRing="hover:ring-error/30"
                         iconFill />
                     <GlassMetric icon="payments" iconColor="text-primary" label="Archival Value"
-                        value={`$${stats.stockValue}`}
+                        value={`$${Number(stats.stockValue).toLocaleString()}`}
                         sub={<><span className="material-symbols-outlined text-sm">verified_user</span> Insured & Audited</>}
                         subColor="text-on-surface-variant" hoverRing="hover:ring-primary/30" />
                 </div>
 
-                {/* Category Distribution */}
+                {/* Category Distribution — REAL DATA */}
                 <div className="col-span-12 md:col-span-8">
                     <div className="glass-card p-8 rounded-xl ring-1 ring-white/5 h-full flex flex-col">
                         <div className="flex justify-between items-center mb-10">
                             <h3 className="text-xl font-bold tracking-tighter uppercase">Category Distribution</h3>
-                            <div className="flex gap-2">
-                                <div className="px-3 py-1 bg-surface-container rounded text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Weekly</div>
-                                <div className="px-3 py-1 bg-surface-container-high rounded text-[10px] font-bold uppercase tracking-widest text-tertiary">Monthly</div>
+                            <div className="px-3 py-1 bg-surface-container-high rounded text-[10px] font-bold uppercase tracking-widest text-tertiary">
+                                {stats.categories.length} categor{stats.categories.length === 1 ? 'y' : 'ies'}
                             </div>
                         </div>
                         <div className="flex-1 flex flex-col justify-around">
                             <div className="space-y-6">
-                                <ProgressBar label="Precision Electronics" value="42%" width="w-[42%]" color="bg-primary" />
-                                <ProgressBar label="Industrial Components" value="28%" width="w-[28%]" color="bg-tertiary" />
-                                <ProgressBar label="Raw Materials" value="15%" width="w-[15%]" color="bg-primary-container" />
-                                <ProgressBar label="Legacy Archives" value="15%" width="w-[15%]" color="bg-secondary" />
+                                {stats.categories.length > 0 ? stats.categories.map((cat, i) => (
+                                    <ProgressBar key={cat.name} label={cat.name} value={`${cat.percentage}%`}
+                                        pct={cat.percentage} color={barColors[i % barColors.length]} />
+                                )) : (
+                                    <p className="text-on-surface-variant text-sm italic">No inventory data yet — add items via the Vault.</p>
+                                )}
                             </div>
                             <div className="mt-8 grid grid-cols-2 gap-4">
                                 <div className="bg-surface-container-low p-4 rounded-lg flex items-center gap-4">
                                     <div className="w-2 h-2 rounded-full bg-tertiary"></div>
                                     <div>
-                                        <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Health Score</p>
-                                        <p className="text-lg font-bold text-white tracking-tighter">98.2%</p>
+                                        <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Stock Health</p>
+                                        <p className="text-lg font-bold text-white tracking-tighter">{healthPct}%</p>
                                     </div>
                                 </div>
                                 <div className="bg-surface-container-low p-4 rounded-lg flex items-center gap-4">
@@ -296,44 +301,50 @@ function Dashboard() {
                     </div>
                 </div>
 
-                {/* Recent Shipments */}
+                {/* Recent Vault Entries — REAL DATA */}
                 <div className="col-span-12">
                     <div className="bg-surface-container rounded-xl p-8 ring-1 ring-white/5">
                         <div className="flex justify-between items-center mb-8">
-                            <h3 className="text-xl font-bold tracking-tighter uppercase">Recent Shipments</h3>
-                            <button className="text-sm font-bold text-primary hover:text-tertiary transition-colors uppercase tracking-widest">View Archives</button>
+                            <h3 className="text-xl font-bold tracking-tighter uppercase">Recent Vault Entries</h3>
+                            <button onClick={() => window.location.href = '/inventory'} className="text-sm font-bold text-primary hover:text-tertiary transition-colors uppercase tracking-widest">View All</button>
                         </div>
                         <div className="space-y-2">
                             <div className="grid grid-cols-5 px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/60">
-                                <div className="col-span-2">Tracking ID / Product</div>
-                                <div>Destination</div>
-                                <div>Status</div>
-                                <div className="text-right">Weight</div>
+                                <div className="col-span-2">Asset / Category</div>
+                                <div>Supplier</div>
+                                <div>Stock Status</div>
+                                <div className="text-right">Valuation</div>
                             </div>
-                            {[
-                                { id: '#TRK-9902-X', name: 'Haptic Feedback Module A1', icon: 'package_2', dest: 'Berlin Hub', status: 'In Transit', statusColor: 'bg-tertiary/10 text-tertiary ring-tertiary/20', weight: '0.45 kg' },
-                                { id: '#TRK-8812-Z', name: 'Optical Sensor Grid', icon: 'token', dest: 'Tokyo Port', status: 'Delivered', statusColor: 'bg-primary/10 text-primary ring-primary/20', weight: '12.20 kg' },
-                                { id: '#TRK-7741-L', name: 'Neural Core Upgrade', icon: 'memory', dest: 'SF Vault 3', status: 'On Hold', statusColor: 'bg-error/10 text-error ring-error/20', weight: '2.80 kg' },
-                            ].map(row => (
-                                <div key={row.id} className="grid grid-cols-5 items-center px-4 py-4 bg-surface-container-low hover:bg-surface-container-high rounded-md transition-colors group">
-                                    <div className="col-span-2 flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-md bg-surface-variant flex items-center justify-center text-primary group-hover:scale-105 transition-transform">
-                                            <span className="material-symbols-outlined">{row.icon}</span>
+                            {stats.recentItems.length > 0 ? stats.recentItems.map(item => {
+                                const isCritical = item.quantity_on_hand < item.reorder_level;
+                                const pct = Math.min(100, (item.quantity_on_hand / Math.max(item.reorder_level * 3, 1)) * 100);
+                                const statusLabel = isCritical ? 'Critical' : item.quantity_on_hand < item.reorder_level * 1.5 ? 'Low' : 'Healthy';
+                                const statusColor = isCritical ? 'bg-error/10 text-error ring-error/20' : statusLabel === 'Low' ? 'bg-amber-500/10 text-amber-400 ring-amber-500/20' : 'bg-tertiary/10 text-tertiary ring-tertiary/20';
+                                const categoryIcons = { 'Electronics': 'memory', 'Food': 'restaurant', 'Clothing': 'checkroom', 'Hardware': 'hardware', 'default': 'inventory_2' };
+                                const icon = categoryIcons[item.category] || categoryIcons['default'];
+                                return (
+                                    <div key={item.inventory_id} className="grid grid-cols-5 items-center px-4 py-4 bg-surface-container-low hover:bg-surface-container-high rounded-md transition-colors group">
+                                        <div className="col-span-2 flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-md bg-surface-variant flex items-center justify-center text-primary group-hover:scale-105 transition-transform">
+                                                <span className="material-symbols-outlined">{icon}</span>
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-bold text-white uppercase tracking-tighter">{item.name}</p>
+                                                <p className="text-[11px] text-on-surface-variant uppercase tracking-widest font-medium">{item.category}</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="text-sm font-bold text-white uppercase tracking-tighter">{row.id}</p>
-                                            <p className="text-[11px] text-on-surface-variant uppercase tracking-widest font-medium">{row.name}</p>
+                                        <div className="text-sm font-medium text-on-surface">{item.supplier_name}</div>
+                                        <div className="flex items-center gap-3">
+                                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest ring-1 ${statusColor}`}>
+                                                {statusLabel} ({item.quantity_on_hand})
+                                            </span>
                                         </div>
+                                        <div className="text-right text-sm font-bold text-white">${Number(item.unit_price).toLocaleString()}</div>
                                     </div>
-                                    <div className="text-sm font-medium text-on-surface">{row.dest}</div>
-                                    <div>
-                                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest ring-1 ${row.statusColor}`}>
-                                            {row.status}
-                                        </span>
-                                    </div>
-                                    <div className="text-right text-sm font-bold text-white">{row.weight}</div>
-                                </div>
-                            ))}
+                                );
+                            }) : (
+                                <div className="px-4 py-8 text-center text-on-surface-variant text-sm italic">No inventory entries yet — add items via the Vault.</div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -358,7 +369,10 @@ function GlassMetric({ icon, iconColor, label, value, sub, subColor, hoverRing, 
     );
 }
 
-function ProgressBar({ label, value, width, color }) {
+function ProgressBar({ label, value, pct, width, color }) {
+    // Support both dynamic pct (number) and static width (Tailwind class)
+    const barStyle = pct !== undefined ? { width: `${pct}%` } : undefined;
+    const barClass = pct !== undefined ? '' : (width || '');
     return (
         <div className="space-y-2">
             <div className="flex justify-between text-xs font-bold uppercase tracking-widest">
@@ -366,7 +380,7 @@ function ProgressBar({ label, value, width, color }) {
                 <span className="text-on-surface-variant">{value}</span>
             </div>
             <div className="h-1 w-full bg-outline-variant/20 rounded-full overflow-hidden">
-                <div className={`h-full ${color} rounded-full ${width}`}></div>
+                <div className={`h-full ${color} rounded-full ${barClass}`} style={barStyle}></div>
             </div>
         </div>
     );

@@ -13,6 +13,33 @@ A modern, full-stack Inventory Management System built with React and Node.js.
 - **🏢 Supplier Management** - Maintain supplier directory with contact information
 - **⚠️ Low Stock Alerts** - Automatic detection of items below reorder level
 
+## 🚶 Project Walkthrough
+
+Explore the core functionality of IMS through this step-by-step guide.
+
+### 1. 🔐 Authentication
+Begin by logging in with the administrative credentials. The system uses a secure mock authentication flow to ensure only authorized users access the inventory data.
+- **Goal**: Access the secure dashboard.
+- **Action**: Enter email `admin@example.com` and password `password`.
+
+### 2. 📊 The Command Center (Dashboard)
+Once authenticated, you are greeted by the Dashboard. This is your high-level overview of the entire operation.
+- **Insights**: Monitor total product count, identify items needing immediate attention (Low Stock), see your supplier base size, and track the total valuation of your stock.
+- **Visuals**: Interactive charts provide a breakdown of stock levels and categories.
+
+### 3. 📦 Inventory Control
+Navigate to the Inventory page to manage your assets.
+- **View**: A comprehensive table showing all products, their categories, current stock levels, and unit prices.
+- **Action**: Click "Add Inventory" to register new products. The system automatically calculates stock value and monitors the reorder level.
+
+### 4. 🏢 Supplier Network
+Maintain your relationships with the Suppliers page.
+- **Directory**: View all registered suppliers and their contact information.
+- **Action**: Add new suppliers to expand your sourcing capabilities. Each inventory item is linked back to a specific supplier for better traceability.
+
+### 5. 🌑 Precision Curator Theme
+The entire interface is wrapped in a high-tech "Precision Curator" dark mode, designed for reduced eye strain and a premium aesthetic.
+
 ## 🛠️ Tech Stack
 
 ### Frontend

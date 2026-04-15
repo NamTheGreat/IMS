@@ -27,7 +27,9 @@ app.get('/api/dashboard', (req, res) => {
         totalProducts: 0,
         lowStock: 0,
         suppliers: 0,
-        stockValue: 0
+        stockValue: 0,
+        categories: [],
+        recentItems: []
     };
 
     db.get("SELECT count(*) as count FROM product", (err, row) => {
@@ -45,7 +47,32 @@ app.get('/api/dashboard', (req, res) => {
                 db.get("SELECT sum(p.unit_price * i.quantity_on_hand) as value FROM product p JOIN inventory i ON p.product_id = i.product_id", (err, row) => {
                     if (err) return res.status(500).json({ error: err.message });
                     stats.stockValue = row.value || 0;
-                    res.json(stats);
+
+                    // Category distribution
+                    db.all(`SELECT p.category, COUNT(*) as count, SUM(i.quantity_on_hand) as totalQty
+                            FROM product p JOIN inventory i ON p.product_id = i.product_id
+                            GROUP BY p.category ORDER BY totalQty DESC`, (err, rows) => {
+                        if (err) return res.status(500).json({ error: err.message });
+                        const totalQty = rows.reduce((s, r) => s + (r.totalQty || 0), 0);
+                        stats.categories = rows.map(r => ({
+                            name: r.category || 'Uncategorized',
+                            count: r.count,
+                            quantity: r.totalQty,
+                            percentage: totalQty > 0 ? Math.round((r.totalQty / totalQty) * 100) : 0
+                        }));
+
+                        // Recent inventory items (last 5 added)
+                        db.all(`SELECT i.inventory_id, p.name, p.category, i.quantity_on_hand, i.reorder_level, p.unit_price,
+                                       s.name as supplier_name
+                                FROM inventory i
+                                JOIN product p ON i.product_id = p.product_id
+                                JOIN supplier s ON i.supplier_id = s.supplier_id
+                                ORDER BY i.rowid DESC LIMIT 5`, (err, rows) => {
+                            if (err) return res.status(500).json({ error: err.message });
+                            stats.recentItems = rows || [];
+                            res.json(stats);
+                        });
+                    });
                 });
             });
         });
