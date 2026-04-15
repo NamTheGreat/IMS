@@ -391,6 +391,8 @@ function Inventory() {
     const [items, setItems] = React.useState([]);
     const [showForm, setShowForm] = React.useState(false);
     const [newItem, setNewItem] = React.useState({ name: '', category: '', quantity: '', price: '' });
+    const [editingId, setEditingId] = React.useState(null);
+    const [editQty, setEditQty] = React.useState('');
 
     const fetchItems = () => { fetch(`${API}/inventory`).then(r => r.json()).then(setItems).catch(console.error); };
     React.useEffect(fetchItems, []);
@@ -402,6 +404,28 @@ function Inventory() {
                 if (data.success) { setShowForm(false); setNewItem({ name: '', category: '', quantity: '', price: '' }); fetchItems(); }
                 else alert('Error: ' + (data.error || 'Unknown'));
             }).catch(err => alert('Error: ' + err.message));
+    };
+
+    const updateQty = (inventoryId, delta) => {
+        fetch(`${API}/inventory/${inventoryId}`, {
+            method: 'PUT', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ delta })
+        }).then(r => r.json()).then(data => {
+            if (data.success) fetchItems();
+            else alert('Error: ' + (data.error || 'Unknown'));
+        }).catch(err => alert('Error: ' + err.message));
+    };
+
+    const setQty = (inventoryId) => {
+        const qty = parseInt(editQty, 10);
+        if (isNaN(qty) || qty < 0) { alert('Enter a valid quantity'); return; }
+        fetch(`${API}/inventory/${inventoryId}`, {
+            method: 'PUT', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ quantity: qty })
+        }).then(r => r.json()).then(data => {
+            if (data.success) { setEditingId(null); setEditQty(''); fetchItems(); }
+            else alert('Error: ' + (data.error || 'Unknown'));
+        }).catch(err => alert('Error: ' + err.message));
     };
 
     const totalValue = items.reduce((sum, i) => sum + (i.unit_price * i.quantity_on_hand), 0);
@@ -473,7 +497,7 @@ function Inventory() {
                         <tr className="bg-surface-container-low/50">
                             <th className="py-5 px-8 text-[11px] font-bold uppercase tracking-widest text-on-surface-variant/60">Asset Name</th>
                             <th className="py-5 px-6 text-[11px] font-bold uppercase tracking-widest text-on-surface-variant/60">Classification</th>
-                            <th className="py-5 px-6 text-[11px] font-bold uppercase tracking-widest text-on-surface-variant/60">Stock Pulse</th>
+                            <th className="py-5 px-6 text-[11px] font-bold uppercase tracking-widest text-on-surface-variant/60">Stock Level</th>
                             <th className="py-5 px-6 text-[11px] font-bold uppercase tracking-widest text-on-surface-variant/60 text-right">Valuation</th>
                         </tr>
                     </thead>
@@ -481,6 +505,7 @@ function Inventory() {
                         {items.map((item, i) => {
                             const pct = Math.min(100, (item.quantity_on_hand / 50) * 100);
                             const isCritical = item.quantity_on_hand < 10;
+                            const isEditing = editingId === item.inventory_id;
                             return (
                                 <tr key={i} className="group hover:bg-surface-container-high transition-colors">
                                     <td className="py-6 px-8">
@@ -491,12 +516,40 @@ function Inventory() {
                                     </td>
                                     <td className="py-6 px-6">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-24 h-1 bg-outline-variant/20 rounded-full relative overflow-hidden">
-                                                <div className={`absolute inset-y-0 left-0 rounded-full ${isCritical ? 'bg-error' : 'bg-tertiary'}`} style={{ width: `${pct}%` }}></div>
-                                            </div>
-                                            <span className={`text-xs font-bold ${isCritical ? 'text-error' : 'text-tertiary'}`}>
-                                                {isCritical ? 'Critical' : `${item.quantity_on_hand}`}
-                                            </span>
+                                            {/* Decrease button */}
+                                            <button onClick={() => updateQty(item.inventory_id, -1)}
+                                                disabled={item.quantity_on_hand <= 0}
+                                                className="w-7 h-7 rounded-md bg-surface-container-highest flex items-center justify-center text-on-surface-variant hover:bg-error/20 hover:text-error transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                                                title="Decrease by 1">
+                                                <span className="material-symbols-outlined text-[16px]">remove</span>
+                                            </button>
+
+                                            {/* Quantity display / inline edit */}
+                                            {isEditing ? (
+                                                <form onSubmit={(e) => { e.preventDefault(); setQty(item.inventory_id); }} className="flex items-center gap-1">
+                                                    <input type="number" autoFocus value={editQty}
+                                                        onChange={e => setEditQty(e.target.value)}
+                                                        onBlur={() => { setEditingId(null); setEditQty(''); }}
+                                                        className="w-16 px-2 py-1 bg-surface-container-highest border-none rounded text-sm text-center text-on-surface focus:ring-1 ring-tertiary/30" />
+                                                </form>
+                                            ) : (
+                                                <button onClick={() => { setEditingId(item.inventory_id); setEditQty(String(item.quantity_on_hand)); }}
+                                                    className="min-w-[3rem] text-center cursor-pointer" title="Click to set exact quantity">
+                                                    <div className="w-20 h-1 bg-outline-variant/20 rounded-full relative overflow-hidden mb-1">
+                                                        <div className={`absolute inset-y-0 left-0 rounded-full ${isCritical ? 'bg-error' : 'bg-tertiary'}`} style={{ width: `${pct}%` }}></div>
+                                                    </div>
+                                                    <span className={`text-xs font-bold ${isCritical ? 'text-error' : 'text-tertiary'}`}>
+                                                        {item.quantity_on_hand}
+                                                    </span>
+                                                </button>
+                                            )}
+
+                                            {/* Increase button */}
+                                            <button onClick={() => updateQty(item.inventory_id, 1)}
+                                                className="w-7 h-7 rounded-md bg-surface-container-highest flex items-center justify-center text-on-surface-variant hover:bg-tertiary/20 hover:text-tertiary transition-all"
+                                                title="Increase by 1">
+                                                <span className="material-symbols-outlined text-[16px]">add</span>
+                                            </button>
                                         </div>
                                     </td>
                                     <td className="py-6 px-6 text-right font-bold text-white">${Number(item.unit_price).toLocaleString()}</td>

@@ -101,6 +101,38 @@ app.get('/api/suppliers', (req, res) => {
     });
 });
 
+// Update Inventory Quantity
+app.put('/api/inventory/:id', (req, res) => {
+    const { id } = req.params;
+    const { quantity, delta } = req.body;
+
+    if (delta !== undefined) {
+        // Adjust by delta (e.g. +1 or -1)
+        db.run(
+            `UPDATE inventory SET quantity_on_hand = MAX(0, quantity_on_hand + ?) WHERE inventory_id = ?`,
+            [delta, id],
+            function (err) {
+                if (err) return res.status(500).json({ error: err.message });
+                if (this.changes === 0) return res.status(404).json({ error: 'Item not found' });
+                res.json({ success: true, message: 'Quantity updated' });
+            }
+        );
+    } else if (quantity !== undefined) {
+        // Set absolute quantity
+        db.run(
+            `UPDATE inventory SET quantity_on_hand = ? WHERE inventory_id = ?`,
+            [Math.max(0, quantity), id],
+            function (err) {
+                if (err) return res.status(500).json({ error: err.message });
+                if (this.changes === 0) return res.status(404).json({ error: 'Item not found' });
+                res.json({ success: true, message: 'Quantity updated' });
+            }
+        );
+    } else {
+        res.status(400).json({ error: 'Provide quantity or delta' });
+    }
+});
+
 // Add Inventory
 app.post('/api/inventory', (req, res) => {
     const { name, category, quantity, price, supplier_id } = req.body;
